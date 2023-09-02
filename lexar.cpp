@@ -12,11 +12,11 @@
 using namespace std;
 
 class Lexar{
-    unordered_map<std::string, int> mp;
+    map<std::string, int> symbolmap;
     public:
-    void init(char str[5000]){
+    void init(char *str){
        removeComments(str); // returns the uncommented character array
-        mp = {
+        symbolmap = {
             {"+", PLUS}, {"-", MINUS}, {"%", PERCENT}, {"/", DIV}, {"*", MULT},
             {"++", PLUS_PLUS}, {"--", MINUS_MINUS}, {"=", EQ}, {"+=", PLUS_EQ},
             {"-=", MINUS_EQ}, {"*=", MULT_EQ}, {"/=", DIV_EQ}, {"<", LESSER},
@@ -32,7 +32,7 @@ class Lexar{
         };
        
     }
-    void tokenise(char str[5000]){
+    void tokenise(char* str){
         tokens(str);
     }
 
@@ -46,7 +46,8 @@ class Lexar{
         int len = strlen(str);
 
         // forming sets
-        
+        map<string, int> mp;
+        mp=symbolmap;
         set<string> sym;
         
         FILE *fp, *fr;
@@ -150,46 +151,77 @@ class Lexar{
         fclose(fr);
         return;
     }
-    void removeComments(char str[5000]) {
-    int len = strlen(str);
-    bool inSingleLineComment = false;
-    bool inMultiLineComment = false;
-    int writeIndex = 0;
-
-    for (int i = 0; i < len; i++) {
-        if (!inSingleLineComment && !inMultiLineComment) {
-            // Check for the start of a single-line comment
-            if (str[i] == '/' && i + 1 < len && str[i + 1] == '/') {
-                inSingleLineComment = true;
-                i++; // Skip the next character too
-            }
-            // Check for the start of a multi-line comment
-            else if (str[i] == '/' && i + 1 < len && str[i + 1] == '*') {
-                inMultiLineComment = true;
-                i++; // Skip the next character too
-            }
-            // If not in a comment, copy the character to the result string
-            else {
-                str[writeIndex++] = str[i];
-            }
-        } else if (inSingleLineComment) {
-            // Check for the end of a single-line comment
-            if (str[i] == '\n') {
-                inSingleLineComment = false;
-                str[writeIndex++] = str[i]; // Include newline in the result
-            }
-        } else if (inMultiLineComment) {
-            // Check for the end of a multi-line comment
-            if (str[i] == '*' && i + 1 < len && str[i + 1] == '/') {
-                inMultiLineComment = false;
-                i++; // Skip the next character too
-            }
-        }
+    void removeComments(char str[5000])
+{
+    int n = 5000;
+    char res[5000];
+    int j = 0;
+ 
+    bool s_cmt = false; // single line comment
+    bool m_cmt = false; // multiple line comment
+ 
+    for (int i=0; i<n; i++)
+    {
+	// turning of single line comment
+        if (s_cmt == true && str[i] == '\n')
+            s_cmt = false;
+	// turning of multiple line comment
+        else if  (m_cmt == true && str[i] == '*' && str[i+1] == '/')
+            m_cmt = false,  i++; 
+        // If this character is in a comment, ignore it
+        else if (s_cmt || m_cmt)
+            continue;
+        else if (str[i] == '/' && str[i+1] == '/')
+            s_cmt = true, i++;
+        else if (str[i] == '/' && str[i+1] == '*')
+            m_cmt = true,  i++;
+        else  {
+		res[j] += str[i];
+		j++;
+	}
     }
+    str = res;
+}
+    // void removeComments(char str[5000]) {
+    // int len = 5000;
+    // bool inSingleLineComment = false;
+    // bool inMultiLineComment = false;
+    // int writeIndex = 0;
 
-    // Null-terminate the result string
-    str[writeIndex] = '\0';
-    } ;
+    // for (int i = 0; i < len; i++) {
+    //     if (!inSingleLineComment && !inMultiLineComment) {
+    //         // Check for the start of a single-line comment
+    //         if (str[i] == '/' && i + 1 < len && str[i + 1] == '/') {
+    //             inSingleLineComment = true;
+    //             i++; // Skip the next character too
+    //         }
+    //         // Check for the start of a multi-line comment
+    //         else if (str[i] == '/' && i + 1 < len && str[i + 1] == '*') {
+    //             inMultiLineComment = true;
+    //             i++; // Skip the next character too
+    //         }
+    //         // If not in a comment, copy the character to the result string
+    //         else {
+    //             str[writeIndex++] = str[i];
+    //         }
+    //     } else if (inSingleLineComment) {
+    //         // Check for the end of a single-line comment
+    //         if (str[i] == '\n') {
+    //             inSingleLineComment = false;
+    //             str[writeIndex++] = str[i]; // Include newline in the result
+    //         }
+    //     } else if (inMultiLineComment) {
+    //         // Check for the end of a multi-line comment
+    //         if (str[i] == '*' && i + 1 < len && str[i + 1] == '/') {
+    //             inMultiLineComment = false;
+    //             i++; // Skip the next character too
+    //         }
+    //     }
+    // }
+
+    // // Null-terminate the result string
+    // str[writeIndex] = '\0';
+    // } ;
 
 
     bool isDelimiter(char ch)
